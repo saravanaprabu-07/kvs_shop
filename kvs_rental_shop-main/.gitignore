@@ -1,0 +1,7 @@
+# Ignores node_modules inside both frontend and backend automatically
+**/node_modules/
+**/build/
+**/dist/
+
+# Ignore backend environment variables
+backend/.env

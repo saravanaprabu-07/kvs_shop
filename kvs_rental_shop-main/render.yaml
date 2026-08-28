@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: kvs-rental-backend
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node src/server.js
+    envVars:
+      - key: DB_HOST
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_NAME
+        sync: false
+
+  - type: web
+    name: kvs-rental-frontend
+    runtime: static
+    plan: free
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: build
+    envVars:
+      - key: REACT_APP_API_URL
+        value: https://kvs-rental-backend.onrender.com
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
