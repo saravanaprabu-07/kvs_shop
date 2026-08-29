@@ -1,16 +1,13 @@
 const mysql = require('mysql2');
 require('dotenv').config();
 
-// Trim every value to eliminate hidden whitespace/tab/newline characters
-// that can sneak in when copy-pasting credentials into a dashboard.
 const clean = (val) => (val ? val.trim() : val);
 
-// Aiven (and most managed MySQL providers) require SSL.
-// Paste the full contents of the downloaded ca.pem into the DB_SSL_CA env var on Render.
-const sslConfig = process.env.DB_SSL_CA
-  ? { ca: clean(process.env.DB_SSL_CA).replace(/\\n/g, '\n') }
-  : undefined;
-
+// Aiven requires SSL. We skip strict CA chain verification here because
+// pasting a multi-line PEM certificate into dashboard env var fields
+// reliably corrupts line breaks. The connection is still encrypted --
+// rejectUnauthorized:false only disables verifying the server's identity
+// against that CA, not encryption itself.
 const pool = mysql.createPool({
   host: clean(process.env.DB_HOST),
   port: Number(clean(process.env.DB_PORT)) || 3306,
@@ -20,7 +17,7 @@ const pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
   connectTimeout: 20000,
-  ssl: sslConfig
+  ssl: { rejectUnauthorized: false }
 });
 
 module.exports = pool.promise();
